@@ -1,0 +1,282 @@
+#include "arduino/arduino.ceu"
+#define DIST 4.8
+
+/* A0-teclado  A2-ldr1  A3-ldr2 */
+
+output int PIN_02; //led azul
+output int PIN_03; //led lilás
+
+output int PIN_04; //led verde
+output int PIN_05; //led laranja
+output int PIN_06; //led amarelo
+output int PIN_07; //led vermelho
+
+var int valueTeclado;
+var int valueLdr1=0;
+var int valueLdr2=0;
+
+var bool aguardandoLeitura=true;
+
+var float velocidade=0;
+var int velocidadeLimite = 0;
+
+vector[12] int tecla = [1,2,3,4,5,6,7,8,9,11,0,12]; //11=*, 12=#
+vector[12] int corrente_tecla = [242, 143, 18, 441, 387, 325, 558, 524, 487, 637, 615, 590];
+
+native _abs;
+native _tone;
+native _noTone;
+
+native/plain _tempoLdr1;
+native/pre do
+	unsigned long int _tempoLdr1;
+end
+
+native/plain _tempoLdr2;
+native/pre do
+	unsigned long int _tempoLdr2;
+end
+
+_Serial.begin(9600);
+
+loop do
+	_Serial.println("Digite os valores");
+	emit PIN_02(HIGH);
+
+	var int j;
+	loop j do
+
+		valueTeclado = _analogRead(A0);
+		await 50ms;
+	
+		if (valueTeclado < 800) then 
+	
+			if (aguardandoLeitura) then
+		
+				var int i;
+				loop i in [0 -> 12[ do
+					if (_abs(valueTeclado - corrente_tecla[i]) < 5) then
+						aguardandoLeitura=false;
+
+						if (tecla[i]==12) then //12=# enviar
+							_tone(A1,262);
+							await 70ms;
+							_tone(A1,330);
+							await 70ms;
+							_tone(A1,391);
+							await 200ms;
+							_noTone(A1);
+							break/j;
+						end
+
+						if (tecla[i]==11) then //11=* apagar
+							velocidadeLimite=0;
+							_tone(A1,260);
+							await 50ms;
+							_noTone(A1);
+							await 50ms;
+							_tone(A1,260);
+							await 70ms;
+							_noTone(A1);
+						else
+
+						if (velocidadeLimite * 10 + tecla[i] < 0) then //estouro
+							_tone(A1,247);							
+							await 70ms;
+							_tone(A1,233);							
+							await 70ms;
+							_tone(A1,220);							
+							await 70ms;
+							_noTone(A1);
+						else
+							velocidadeLimite = velocidadeLimite * 10 + tecla[i];
+							_tone(A1,440);
+							await 70ms;
+							_noTone(A1);
+						end
+							
+					end
+
+					_Serial.println(velocidadeLimite);
+					break/i;
+					
+				end
+			end
+		end
+		else
+			aguardandoLeitura=true;
+		end
+	end
+
+	emit PIN_02(LOW);
+	emit PIN_03(HIGH);
+	_Serial.println("Radar ligado");
+
+	loop do
+		valueLdr1 = _analogRead(A2);
+		_Serial.println(valueLdr1);
+		if (valueLdr1 < 100)then
+			{_tempoLdr1 = millis();};
+			break;
+		end
+	end
+
+	loop do
+		valueLdr2 = _analogRead(A3);
+		_Serial.println(valueLdr2);
+		if (valueLdr2 < 100)then
+			{_tempoLdr2 = millis();};
+			break;
+		end
+	end
+
+	emit PIN_03(LOW);
+
+	velocidade = { DIST  * 1000.0 /  (float)(_tempoLdr2 - _tempoLdr1)  };
+
+	{
+		Serial.print("Velocidade medida: ");
+		Serial.println(@velocidade);
+		Serial.print("Velocidade limite: ");
+		Serial.println(@velocidadeLimite);
+		Serial.print("Ldr1: ");
+		Serial.println(@valueLdr1);
+		Serial.print("Ldr2: ");
+		Serial.println(@valueLdr2);
+		Serial.print("Millis do Ldr1: ");
+		Serial.println(_tempoLdr1);
+		Serial.print("Millis do Ldr2: ");
+		Serial.println(_tempoLdr2);
+	};
+
+	if (velocidade <= velocidadeLimite) then
+		_Serial.println("velocidade < limite");
+		emit PIN_04(HIGH); //led verde
+		//musica mario
+		_tone(A1,2637);
+        await 83ms;
+        _noTone(A1);
+        await 108ms;
+        _tone(A1,2637);
+        await 83ms;
+        _noTone(A1);
+        await 299ms;
+        _tone(A1,2637);
+        await 83ms;
+
+
+        _noTone(A1);
+        await 299ms;
+        _tone(A1,2093);
+        await 83ms;
+        _noTone(A1);
+        await 108ms;
+        _tone(A1,2637);
+        await 83ms;
+        _noTone(A1);
+        await 299ms;
+
+
+        _tone(A1,3136);
+        await 83ms;
+        _noTone(A1);
+        await 681ms;
+        _tone(A1,1568);
+        await 83ms;
+        _noTone(A1);
+        await 681ms;
+
+
+        _tone(A1,2093);
+        await 83ms;
+        _noTone(A1);
+        await 490ms;
+        _tone(A1,1568);
+        await 83ms;
+
+        _noTone(A1);
+        await 490ms;
+        _tone(A1,1319);
+        await 83ms;
+        _noTone(A1);
+        await 490ms;
+        _tone(A1,1760);
+        await 83ms;
+
+        _noTone(A1);
+        await 299ms;
+        _tone(A1,1976);
+        await 83ms;
+        _noTone(A1);
+        await 108ms;
+        _tone(A1,1865);
+        await 83ms;
+        _noTone(A1);
+        await 108ms;
+
+        _tone(A1,1760);
+        await 83ms;
+        _noTone(A1);
+        await 299ms;
+
+
+        _tone(A1,1568);
+        await 111ms;
+        _noTone(A1);
+        await 144ms;
+        _tone(A1,2637);
+        await 111ms;
+        _noTone(A1);
+        await 144ms;
+        _tone(A1,3136);
+        await 111ms;
+        _noTone(A1);
+        await 144ms;
+
+
+        _tone(A1,3520);
+        await 83ms;
+        _noTone(A1);
+        await 299ms;
+        _tone(A1,2794);
+        await 83ms;
+        _noTone(A1);
+        await 108ms;
+        _tone(A1,3136);
+        await 83ms;
+
+        _noTone(A1);
+        await 299ms;
+        _tone(A1,2637);
+        await 83ms
+        _noTone(A1);
+        await 299ms;
+        _tone(A1,2093);
+        await 83ms
+        _noTone(A1);
+        await 108ms;
+
+        _tone(A1,2349);
+        await 83ms
+        _tone(A1,1976);
+        await 83ms
+        _noTone(A1);
+	else/if (velocidade <= 1.20*velocidadeLimite) then
+		_Serial.println("Até 20% do limite permitido é de R$ 130,16 - 4 pontos - média");
+		emit PIN_05(HIGH); //led amarelo	
+	else/if (velocidade <= 1.50*velocidadeLimite) then
+		_Serial.println("De 20% até 50% do limite permitido é de R$ 195,23 - 5 pontos - grave");
+		emit PIN_06(HIGH); //led laranja		
+	else
+		_Serial.println("Acima de 50% do limite permitido é de R$ 880,41 - 7 pontos - gravíssima");
+		emit PIN_07(HIGH); //led vermelho	
+	end
+
+	await 10s;
+	emit PIN_04(LOW);
+	emit PIN_05(LOW);
+	emit PIN_06(LOW);
+	emit PIN_07(LOW);
+end
+
+await FOREVER;
