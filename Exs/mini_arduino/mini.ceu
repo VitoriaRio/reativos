@@ -186,7 +186,57 @@ loop do
 
 	else/if (velocidade <= 1.20*velocidadeLimite) then
 		_Serial.println("Até 20% do limite permitido é de R$ 130,16 - 4 pontos - média");
-		emit PIN_05(HIGH); //led amarelo	
+		emit PIN_05(HIGH); //led amarelo
+		//musica mario perdendo a vida
+		_tone(A1,1976);
+		await 80ms;
+		_noTone(A1);
+		await 80ms;
+
+		_tone(A1,2794);
+		await 80ms;
+		_noTone(A1);
+		await 120ms;
+		//
+		_tone(A1,2794);
+		await 80ms;
+		_noTone(A1);
+		await 80ms;
+
+		_tone(A1,2794);
+		await 80ms;
+		_noTone(A1);
+		await 80ms;
+
+		_tone(A1,2637);
+		await 80ms;
+		_noTone(A1);
+		await 120ms;
+		//
+		_tone(A1,2349);
+		await 80ms;
+		_noTone(A1);
+		await 80ms;
+
+		_tone(A1,2093);
+		await 80ms;
+		_noTone(A1);
+		await 80ms;
+
+		_tone(A1,1568);
+		await 80ms;
+		_noTone(A1);
+		await 120ms;
+		//
+		_tone(A1,1319);
+		await 80ms;
+		_noTone(A1);
+		await 80ms;
+
+		_tone(A1,1047);
+		await 80ms;
+		_noTone(A1);
+		await 80ms;
 	else/if (velocidade <= 1.50*velocidadeLimite) then
 		_Serial.println("De 20% até 50% do limite permitido é de R$ 195,23 - 5 pontos - grave");
 		emit PIN_06(HIGH); //led laranja		
